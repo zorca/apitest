@@ -17,6 +17,7 @@ class Api
         $this->db = new Client();
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->parameters = $_REQUEST;
+        $this->migration();
         switch($this->method) {
             case 'GET':
                 $this->method = 'GET';
@@ -28,25 +29,36 @@ class Api
                 break;
             case 'POST':
                 $this->method = 'POST';
-                echo $this->viewAction();
+                echo $this->createAction($this->parameters['title'], $this->parameters['done']);
                 break;
             case 'PUT':
                 $this->method = 'PUT';
-                echo $this->createAction($this->parameters['title'], $this->parameters['done']);
+                echo $this->updateAction($this->parameters['id'], $this->parameters['title'], $this->parameters['done']);
                 break;
             case 'DELETE':
                 $this->method = 'DELETE';
                 echo $this->deleteAction($this->parameters['id']);
                 break;
             default:
-                return $this->response('Method No Found', 405);
+                echo $this->response('Method No Found', 405);
                 break;
         }
     }
 
+    protected function migration()
+    {
+        $migrateData = [
+            ['title' => 'First Item', 'done' => false],
+            ['title' => 'Second Item', 'done' => true],
+            ['title' => 'Third Item', 'done' => false],
+        ];
+        $count = count($migrateData);
+        echo $this->response($count);
+    }
+
     protected function indexAction()
     {
-        return $this->response(['method' => $method = $this->method, 'data' => '']);
+        return $this->response(['method' => $method = $this->method, 'data' => $this->db->get]);
     }
 
     protected function viewAction($id)
@@ -59,13 +71,13 @@ class Api
 
     protected function createAction($title, $done)
     {
-
         $this->db->set($this->index, json_encode(['title' => $title, 'done' => $done ? $done : false]));
         return $this->response(['method' => $method = $this->method]);
     }
 
-    protected function updateAction($id)
+    protected function updateAction($id, $title, $done)
     {
+        $this->db->set($id, json_encode(['title' => $title, 'done' => $done ? $done : false]));
         return $this->response(['method' => $method = $this->method]);
     }
 
