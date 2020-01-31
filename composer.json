@@ -1,0 +1,13 @@
+{
+    "name": "zorca/apitest",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Zorca Orcinus",
+            "email": "vs@zorca.org"
+        }
+    ],
+    "require": {
+        "predis/predis": "^1.1"
+    }
+}
