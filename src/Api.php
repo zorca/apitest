@@ -20,6 +20,7 @@ class Api
         if (! $this->db->exists(TODO_INDEX_KEY)) {
             $this->migration();
         }
+        $this->index = (int) $this->db->get(TODO_INDEX_KEY);
         switch($this->method) {
             case 'GET':
                 $this->method = 'GET';
@@ -76,28 +77,33 @@ class Api
         if (! $this->db->exists(TODO_ITEM_PREFIX.$id)) {
             return $this->response('Item with id=' . $id . ' not found', 404);
         }
-        return $this->response(['method' => $method = $this->method, 'data' => json_decode($id, true)], 200);
+        return $this->response(['method' => $method = $this->method, 'data' => json_decode($this->db->get(TODO_ITEM_PREFIX.$id), true)], 200);
     }
 
     protected function createAction($title, $done)
     {
-        $this->db->set($this->index, json_encode(['title' => $title, 'done' => $done ? $done : false]));
-        return $this->response(['method' => $method = $this->method]);
+        $this->index++;
+        $this->db->set(TODO_INDEX_KEY, $this->index);
+        $this->db->set(TODO_ITEM_PREFIX.$this->index, json_encode(['title' => $title, 'done' => $done ? $done : false]));
+        return $this->response('Item with id=' . $this->index . ' created', 200);
     }
 
     protected function updateAction($id, $title, $done)
     {
-        $this->db->set($id, json_encode(['title' => $title, 'done' => $done ? $done : false]));
-        return $this->response(['method' => $method = $this->method]);
+        if (! $this->db->exists(TODO_ITEM_PREFIX.$id)) {
+            return $this->response('Item with id=' . $id . ' not found', 404);
+        }
+        $this->db->set(TODO_ITEM_PREFIX.$id, json_encode(['title' => $title, 'done' => $done ? $done : false]));
+        return $this->response(['method' => $method = $this->method, 'data' => json_decode($this->db->get(TODO_ITEM_PREFIX.$id), true)], 200);
     }
 
     protected function deleteAction($id)
     {
-        if (! $this->db->exists($id)) {
-            return $this->response('Item not found', 404);
+        if (! $this->db->exists(TODO_ITEM_PREFIX.$id)) {
+            return $this->response('Item with id=' . $id . ' not found', 404);
         }
-        $this->db->del($id);
-        return $this->response(['method' => $this->method]);
+        $this->db->del([TODO_ITEM_PREFIX.$id]);
+        return $this->response(['method' => $this->method, 'message' => 'Item removed'], 200);
     }
 
     protected function response($data, $status = 500)
