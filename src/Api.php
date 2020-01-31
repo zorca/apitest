@@ -17,7 +17,9 @@ class Api
         $this->db = new Client();
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->parameters = $_REQUEST;
-        $this->migration();
+        if (! $this->db->exists(TODO_INDEX_KEY)) {
+            $this->migration();
+        }
         switch($this->method) {
             case 'GET':
                 $this->method = 'GET';
@@ -48,12 +50,15 @@ class Api
     protected function migration()
     {
         $migrateData = [
-            ['title' => 'First Item', 'done' => false],
-            ['title' => 'Second Item', 'done' => true],
-            ['title' => 'Third Item', 'done' => false],
+            1 => ['title' => 'First Item', 'done' => false],
+            2 => ['title' => 'Second Item', 'done' => true],
+            3 => ['title' => 'Third Item', 'done' => false],
         ];
-        $count = count($migrateData);
-        echo $this->response($count);
+        $migrateCount = count($migrateData);
+        foreach ($migrateData as $index => $item) {
+            $this->db->set(TODO_ITEM_PREFIX.$index, json_encode($item));
+        }
+        $this->db->set(TODO_INDEX_KEY, $migrateCount);
     }
 
     protected function indexAction()
