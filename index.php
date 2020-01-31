@@ -1,5 +1,5 @@
 <?php
 
-require __DIR__ . '/API.php';
+require __DIR__ . '/vendor/autoload.php';
 
-new API();
+new \App\Api();
