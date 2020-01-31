@@ -15,7 +15,7 @@ class Api
     public function __construct()
     {
         $this->db = new Client();
-        $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->method = array_key_exists('REQUEST_METHOD', $_SERVER) ? $_SERVER['REQUEST_METHOD'] : null;
         $this->parameters = $_REQUEST;
         if (! $this->db->exists(TODO_INDEX_KEY)) {
             $this->migration();
@@ -85,7 +85,7 @@ class Api
     {
         $this->index++;
         $this->db->set(TODO_INDEX_KEY, $this->index);
-        $this->db->set(TODO_ITEM_PREFIX.$this->index, json_encode(['title' => $title, 'done' => $done ? $done : false]));
+        $this->db->set(TODO_ITEM_PREFIX.$this->index, json_encode(['title' => $title, 'done' => $done ? $done : false], JSON_UNESCAPED_UNICODE));
         return $this->response('Item with id=' . $this->index . ' created', 200);
     }
 
@@ -94,7 +94,7 @@ class Api
         if (! $this->db->exists(TODO_ITEM_PREFIX.$id)) {
             return $this->response('Item with id=' . $id . ' not found', 404);
         }
-        $this->db->set(TODO_ITEM_PREFIX.$id, json_encode(['title' => $title, 'done' => $done ? $done : false]));
+        $this->db->set(TODO_ITEM_PREFIX.$id, json_encode(['title' => $title, 'done' => $done ? $done : false], JSON_UNESCAPED_UNICODE));
         return $this->response(['method' => $method = $this->method, 'data' => json_decode($this->db->get(TODO_ITEM_PREFIX.$id), true)], 200);
     }
 
@@ -119,6 +119,6 @@ class Api
         header("Access-Control-Allow-Methods: *");
         header('Content-type: application/json');
         header('HTTP/1.1 ' . $status . ' ' . $statusText[$status]);
-        return json_encode($data);
+        return json_encode($data, JSON_UNESCAPED_UNICODE);
     }
 }
