@@ -63,7 +63,12 @@ class Api
 
     protected function indexAction()
     {
-        return $this->response(['method' => $method = $this->method, 'data' => $this->db->get]);
+        $items = [];
+        $keys = $this->db->keys(TODO_ITEM_PREFIX.'*');
+        foreach ($keys as $key) {
+            $items[$key] = json_decode($this->db->get($key));
+        }
+        return $this->response(['method' => $this->method, 'data' => $items], 200);
     }
 
     protected function viewAction($id)
@@ -71,7 +76,7 @@ class Api
         if (! $this->db->exists($id)) {
             return $this->response('Item with id=' . $id . ' not found', 404);
         }
-        return $this->response(['method' => $method = $this->method, 'data' =>json_decode($id, true)]);
+        return $this->response(['method' => $method = $this->method, 'data' => json_decode($id, true)]);
     }
 
     protected function createAction($title, $done)
