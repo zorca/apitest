@@ -66,9 +66,7 @@ class Api
     {
         $items = [];
         $keys = $this->db->keys(TODO_ITEM_PREFIX.'*');
-        var_dump($keys);
         natsort($keys);
-        var_dump($keys);
         foreach ($keys as $key) {
             $items[(int) str_replace(TODO_ITEM_PREFIX, '', $key)] = json_decode($this->db->get($key));
         }
