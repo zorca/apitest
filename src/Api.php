@@ -73,10 +73,10 @@ class Api
 
     protected function viewAction($id)
     {
-        if (! $this->db->exists($id)) {
+        if (! $this->db->exists(TODO_ITEM_PREFIX.$id)) {
             return $this->response('Item with id=' . $id . ' not found', 404);
         }
-        return $this->response(['method' => $method = $this->method, 'data' => json_decode($id, true)]);
+        return $this->response(['method' => $method = $this->method, 'data' => json_decode($id, true)], 200);
     }
 
     protected function createAction($title, $done)
