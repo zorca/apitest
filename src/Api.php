@@ -1,6 +1,10 @@
 <?php
 
-class API
+namespace App;
+
+use Predis\Client;
+
+class Api
 {
 
     protected $method;
@@ -9,8 +13,10 @@ class API
 
     public function __construct()
     {
+        $this->db = new Client();
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->parameters = $_REQUEST;
+        header('Content-type: application/json');
         switch($this->method) {
             case 'GET':
                 $this->method = 'GET';
