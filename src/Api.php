@@ -9,14 +9,14 @@ class Api
 
     protected $method;
     protected $parameters;
-    protected $data;
+    protected $db;
+    protected $index;
 
     public function __construct()
     {
         $this->db = new Client();
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->parameters = $_REQUEST;
-        header('Content-type: application/json');
         switch($this->method) {
             case 'GET':
                 $this->method = 'GET';
@@ -32,45 +32,62 @@ class Api
                 break;
             case 'PUT':
                 $this->method = 'PUT';
-                echo $this->createAction();
+                echo $this->createAction($this->parameters['title'], $this->parameters['done']);
                 break;
             case 'DELETE':
                 $this->method = 'DELETE';
-                echo $this->deleteAction();
+                echo $this->deleteAction($this->parameters['id']);
                 break;
             default:
+                return $this->response('Method No Found', 405);
                 break;
         }
     }
 
     protected function indexAction()
     {
-        $method = $this->method;
-
-        return json_encode(['method' => $method, 'data' => $this->data]);
+        return $this->response(['method' => $method = $this->method, 'data' => '']);
     }
 
     protected function viewAction($id)
     {
-        $method = $this->method;
-        return json_encode(['method' => $method, 'data' =>json_decode($this->data['id'], true)]);
+        if (! $this->db->exists($id)) {
+            return $this->response('Item with id=' . $id . ' not found', 404);
+        }
+        return $this->response(['method' => $method = $this->method, 'data' =>json_decode($id, true)]);
     }
 
     protected function createAction($title, $done)
     {
-        $method = $this->method;
-        return json_encode(['method' => $method]);
+
+        $this->db->set($this->index, json_encode(['title' => $title, 'done' => $done ? $done : false]));
+        return $this->response(['method' => $method = $this->method]);
     }
 
     protected function updateAction($id)
     {
-        $method = $this->method;
-        return json_encode(['method' => $method]);
+        return $this->response(['method' => $method = $this->method]);
     }
 
     protected function deleteAction($id)
     {
-        $method = $this->method;
-        return json_encode(['method' => $method]);
+        if (! $this->db->exists($id)) {
+            return $this->response('Item not found', 404);
+        }
+        $this->db->del($id);
+        return $this->response(['method' => $this->method]);
+    }
+
+    protected function response($data, $status = 500)
+    {
+        $statusText = [
+            200 => 'Ok',
+            404 => 'Not Found',
+            405 => 'Method Not Allowed',
+            500 => 'Internal Server Error'
+        ];
+        header('Content-type: application/json');
+        header('HTTP/1.1 ' . $status . ' ' . $statusText[$status]);
+        return json_encode($data);
     }
 }
