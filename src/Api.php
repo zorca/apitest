@@ -114,6 +114,8 @@ class Api
             405 => 'Method Not Allowed',
             500 => 'Internal Server Error'
         ];
+        header("Access-Control-Allow-Orgin: *");
+        header("Access-Control-Allow-Methods: *");
         header('Content-type: application/json');
         header('HTTP/1.1 ' . $status . ' ' . $statusText[$status]);
         return json_encode($data);
